@@ -1,6 +1,7 @@
 import os  # REINTRODUCCIÓN: Se requiere os para el sumidero vulnerable os.system
 import requests
 from flask import Flask, request, jsonify
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -18,8 +19,9 @@ def process_report_vulnerable():
     # ELIMINACIÓN DE LA FRONTERA DE CONFIANZA:
     # Se eliminó por completo el bloque re.match que filtraba caracteres especiales.
     
-    # SINK VULNERABLE: Concatenación directa dentro de una cadena destinada a la Shell
-    command = f"tar -czf /tmp/backup.tar.gz /var/reports/{file_identifier}"
+    # SINK: Sanitize file_identifier to prevent path traversal
+    safe_file_identifier = secure_filename(file_identifier)
+    command = f"tar -czf /tmp/backup.tar.gz /var/reports/{safe_file_identifier}"
     
     # os.system invoca un intérprete (/bin/sh o cmd) que interpretará metacaracteres (; && |)
     os.system(command)
